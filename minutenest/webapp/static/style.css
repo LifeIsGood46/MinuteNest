@@ -1,0 +1,558 @@
+/* Ensure the [hidden] attribute overrides any display classes (grid/flex). */
+[hidden] { display: none !important; }
+
+:root {
+  --bg: #0c0f16;
+  --bg-soft: #111522;
+  --card: #161b2b;
+  --card-2: #1b2136;
+  --pane: #141a2b;
+  --border: #2a3350;
+  --border-soft: #232b45;
+  --text: #e9ecf4;
+  --muted: #929ab1;
+  --accent: #5b8cff;
+  --violet: #8b5cf6;
+  --teal: #2dd4bf;
+  --grad: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 55%, #2dd4bf 130%);
+  --ok: #3ecf8e;
+  --fail: #ff6b6b;
+  --warn: #f5b041;
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5' fill='none' stroke='%23929ab1' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 20px;
+  --r-xl: 24px;
+  --rail-w: 64px;
+  --shadow-pane: 0 12px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --shadow-card: 0 10px 28px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --shadow-pop: 0 22px 64px rgba(0, 0, 0, 0.62), 0 0 60px rgba(139, 92, 246, 0.10);
+}
+
+* { box-sizing: border-box; }
+/* Keep the scrollbar's room even while the page fits: the header and cards
+   jumped sideways when the first card made the page scroll. */
+html { scrollbar-gutter: stable; }
+
+/* Dark scrollbars everywhere (WebView2/Chromium default to a chunky light
+   one, which reads as a foreign element in the app UI). */
+* { scrollbar-width: thin; scrollbar-color: #3a4568 transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #3b4a75, #2b3657);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #4a5c8f, #36466e); background-clip: padding-box; }
+::-webkit-scrollbar-corner { background: transparent; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background:
+    radial-gradient(900px 400px at 85% -5%, rgba(139, 92, 246, 0.14), transparent 60%),
+    radial-gradient(700px 380px at 10% 0%, rgba(59, 130, 246, 0.12), transparent 60%),
+    radial-gradient(600px 500px at 50% 110%, rgba(45, 212, 191, 0.06), transparent 60%),
+    var(--bg);
+  color: var(--text);
+}
+
+.layout { display: flex; min-height: 100vh; padding-right: var(--rail-w); }
+
+/* icon rail — replaces the old text sidebar */
+.rail {
+  width: var(--rail-w);
+  flex: 0 0 var(--rail-w);
+  background: linear-gradient(180deg, #121728 0%, #0b0e15 60%);
+  border-right: 1px solid var(--border-soft);
+  padding: 0.8rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+.rail-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  box-shadow: 0 0 18px rgba(99, 102, 241, 0.55), inset 0 1px 0 rgba(255,255,255,0.25);
+}
+.rail-spacer { flex: 1; }
+
+.icon-btn {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #202743, #161c31);
+  border: 1px solid var(--border);
+  color: var(--text);
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08);
+  transition: transform 0.12s, box-shadow 0.12s, border-color 0.12s;
+}
+.icon-btn:hover { border-color: var(--accent); transform: translateY(-1px); box-shadow: 0 10px 22px rgba(0,0,0,0.5), 0 0 0 3px rgba(91,140,255,0.15); }
+.icon-btn:active { transform: translateY(0); }
+.icon-btn.danger { color: var(--fail); }
+.icon-btn-inline { width: 30px; height: 30px; flex: 0 0 30px; color: #cdd9ff; border-color: #3a4a76; }
+.icon-btn-inline .ic-sm { width: 17px; height: 17px; }
+.icon-btn:disabled { opacity: 0.45; cursor: wait; transform: none; }
+.preset-row { display: flex; gap: 0.4rem; margin-top: 0.45rem; flex-wrap: wrap; }
+.chip {
+  font-size: 0.75rem; padding: 0.28rem 0.7rem; border-radius: 999px;
+  background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border);
+  color: var(--muted); cursor: pointer;
+}
+.chip:hover { color: var(--text); border-color: var(--accent); }
+.input-row { display: flex; gap: 0.4rem; align-items: center; }
+.input-row select, .input-row input { flex: 1; min-width: 0; }
+.input-row .btn-small { flex: 0 0 auto; align-self: stretch; }  /* as tall as the field beside it */
+.btn:disabled { opacity: 0.5; cursor: wait; }
+
+.ic { width: 20px; height: 20px; display: block; flex: 0 0 auto; }
+.ic-sm { width: 15px; height: 15px; vertical-align: -2px; }
+.ic-lg { width: 30px; height: 30px; }
+
+/* main column + panes */
+.main-col { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.content { flex: 1; padding: 1.25rem 1.5rem 2rem; max-width: 1020px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 1rem; }
+
+.pane {
+  background: linear-gradient(180deg, var(--card-2), var(--pane));
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-pane);
+}
+
+.topbar {
+  margin: 1rem 1.5rem 0;
+  padding: 0.8rem 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-radius: var(--r-md);
+}
+.topbar-left { display: flex; align-items: baseline; gap: 0.7rem; }
+.topbar-title { font-size: 1.05rem; letter-spacing: 0.3px; text-shadow: 0 0 24px rgba(139, 92, 246, 0.45); }
+.topbar-right { display: flex; align-items: center; gap: 0.7rem; }
+/* each header text stays on one line ("tiny · in / memory" at 800 px wide);
+   the tagline steps aside where there is no room for it */
+.topbar-title, .tagline, #model-pill, #app-version { white-space: nowrap; }
+@media (max-width: 960px) { .tagline { display: none; } }
+.pill {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  background: #1d2540;
+  border: 1px solid var(--border);
+  color: #b9c6ee;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+.card {
+  background: linear-gradient(180deg, #1a2033, var(--card));
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-card);
+}
+.card h2 { margin-top: 0; font-size: 1.02rem; display: flex; align-items: center; gap: 0.5rem; }
+.card h2 .ic { color: var(--accent); }
+.card:last-child { margin-bottom: 0; }
+
+/* upload pane + dropzone */
+.upload-pane { padding: 0.7rem; }
+.dropzone {
+  border: 2px dashed #38415f;
+  border-radius: var(--r-md);
+  padding: 1.7rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  background: radial-gradient(400px 120px at 50% 0%, rgba(139,92,246,0.10), transparent 70%), #111625;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+.dropzone:hover { border-color: var(--accent); }
+.dropzone.dragover { border-color: var(--violet); background: #171d2c; box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.22), inset 0 1px 0 rgba(255,255,255,0.06); }
+.dropzone-inner { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
+.drop-icon {
+  width: 56px; height: 56px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #2b3560, #1a2140);
+  border: 1px solid var(--border);
+  color: #bcd0ff;
+  box-shadow: 0 8px 24px rgba(59,130,246,0.35), inset 0 1px 0 rgba(255,255,255,0.12);
+  margin-bottom: 0.5rem;
+}
+
+/* hello pane (empty queue) */
+.hello { text-align: center; padding: 2.6rem 2rem; border-radius: var(--r-xl); }
+.hello h1 { margin: 0 0 0.4rem; font-size: 1.5rem; letter-spacing: 0.2px; }
+.hello > p { margin: 0 0 1.3rem; }
+.hello-actions { display: flex; gap: 0.7rem; justify-content: center; }
+
+/* jobs pane */
+.jobs-pane { padding: 1rem 1.1rem 1.1rem; }
+.jobs-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.8rem; }
+.jobs-header h2 { margin: 0; font-size: 1.05rem; display: flex; align-items: center; gap: 0.5rem; }
+.jobs-actions { margin-left: auto; display: flex; gap: 0.4rem; }
+.btn-small { font-size: 0.8rem; padding: 0.35rem 0.7rem; }
+.btn-danger { color: var(--fail); border-color: #3a2020; }
+.btn-danger:hover { border-color: var(--fail); }
+.jobs-list { display: flex; flex-direction: column; gap: 0.8rem; }
+.job { border-radius: var(--r-md); }
+.job-head { display: flex; align-items: center; gap: 0.6rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-soft); margin-bottom: 0.5rem; }
+.job-name { word-break: break-all; }
+.job-stage { font-size: 0.85rem; margin: 0.35rem 0; }
+.job-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-top: 0.7rem; padding-top: 0.6rem; border-top: 1px solid var(--border-soft); }
+.job-actions .btn, .job-actions .btn-ghost { display: inline-flex; align-items: center; gap: 0.4rem; }
+
+/* controls */
+.ctl { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.9rem; }
+.ctl .muted, .muted { color: var(--muted); }
+.ctl.grow { flex: 1; min-width: 220px; }
+/* Let one control span the whole grid row (Save folder: the input+button
+   pair never fits a single half-column without wrapping mid-control). */
+.settings-grid .span-all { grid-column: 1 / -1; }
+.small { font-size: 0.8rem; }
+code { background: #0b0e15; border: 1px solid var(--border); padding: 0.1rem 0.35rem; border-radius: 6px; font-size: 0.82em; }
+
+input, select, textarea, button {
+  font: inherit;
+  color: var(--text);
+  background: #0d1119;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 0.55rem 0.7rem;
+}
+/* Typed fields (search boxes, folder, keys) as tall as the dropdowns beside
+   them: a native select draws 2 px taller than an input with the same padding.
+   One explicit height (line + padding + border) for both. */
+:where(select, input:not([type="checkbox"], [type="radio"], [type="range"])) {
+  height: calc(1.5em + 2 * 0.55rem + 2px);
+}
+/* One arrow for every dropdown: the browser's own arrow (plain dropdowns) and
+   the search boxes' arrow differed in shape and sat ~7 px apart. */
+select {
+  appearance: none;
+  padding-right: 2.2rem;
+  background-image: var(--chevron);
+  background-repeat: no-repeat;
+  background-position: right 0.8rem center;
+  background-size: 12px 12px;
+}
+textarea { resize: vertical; width: 100%; }
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 1px;
+}
+
+.btn {
+  background: var(--grad);
+  border: none;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.55rem 1.1rem;
+  border-radius: var(--r-sm);
+  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.4), inset 0 1px 0 rgba(255,255,255,0.25);
+  display: inline-flex; align-items: center; gap: 0.45rem;
+}
+.btn:hover { filter: brightness(1.1); }
+.btn:active { transform: translateY(1px); }
+.btn-ghost { background: rgba(255,255,255,0.02); border: 1px solid var(--border); color: var(--text); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05); }
+.btn-ghost:hover { border-color: var(--accent); }
+
+/* settings layout */
+.settings-grid { display: grid; gap: 0.8rem 1rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 0.9rem; }
+/* A wrapped label used to push its own select 20px below its neighbor's in
+   the same row ("the boxes are not aligned"). Reserve one line for every
+   label so controls line up; long explanations are a tooltip, not a second
+   line of text. */
+.settings-grid .ctl > .muted:first-child {
+  min-height: 1.4em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.model-status-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 0.4rem 0; flex-wrap: wrap; }
+.model-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.model-actions .btn-small { display: inline-flex; align-items: center; gap: 0.35rem; }
+.settings-actions { display: flex; align-items: center; gap: 0.8rem; }
+.folders-text { line-height: 1.6; }
+.folders-paths { line-height: 1.7; }
+.folders-paths code { display: inline-block; margin: 0.1rem 0; }
+
+/* progress bar */
+.progress-bar {
+  height: 10px;
+  background: #0b0e13;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 0.5rem 0;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+}
+.progress-fill { height: 100%; width: 0%; background: var(--grad); transition: width 0.2s; border-radius: 999px; }
+/* Indeterminate sweep: keep the moving band small and animate only transform
+   (compositor-friendly), not margin-left (layout every frame). */
+.progress-fill.indeterminate { width: 30% !important; animation: indet 1.3s ease-in-out infinite; }
+@keyframes indet {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(433%); }
+}
+.job-progress { margin: 0.45rem 0 0; }
+
+.badge {
+  font-size: 0.72rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border: 1px solid transparent;
+  display: inline-flex; align-items: center; gap: 0.3rem;
+}
+.badge-queued { background: #243044; color: #9fb6e8; border-color: #33405c; }
+.badge-uploading { background: #243044; color: #9fb6e8; border-color: #33405c; }
+/* No pulse animation: a permanently animating element keeps a composited
+   layer repainting forever, which made the whole UI feel laggy on VMs with
+   software rendering. The accent color carries the "running" signal. */
+.badge-running { background: #243044; color: var(--accent); border-color: #35507e; }
+.badge-done { background: #143326; color: var(--ok); border-color: #1f4d38; }
+.badge-failed { background: #3a1d1d; color: var(--fail); border-color: #5a2828; }
+.badge-cancelled { background: #33302a; color: #d6c08a; border-color: #55492e; }
+.badge-staged { background: #2b2740; color: #c4b2f2; border-color: #453d6e; }
+
+/* job status accents */
+.job[data-status="running"] { border-left: 3px solid var(--accent); }
+.job[data-status="done"] { border-left: 3px solid var(--ok); }
+.job[data-status="failed"] { border-left: 3px solid var(--fail); }
+.job[data-status="cancelled"] { border-left: 3px solid #d6c08a; }
+.job[data-status="staged"] { border-left: 3px solid var(--violet); }
+
+/* large modal (settings, help). Must out-specify the base .modal rule below
+   (which caps dialogs at 440px) or the settings modal renders half-size. */
+.modal.modal-large { max-width: 760px; max-height: 88vh; overflow-y: auto; }
+
+/* interactive setup wizard: coach-marks over the real UI.
+   Spotlight = four shade rectangles around the target (no z-index fights).
+   Outline + tip live outside .wizard-root so they can float above the
+   Settings modal while the wizard targets a control inside it. */
+.wizard-root { position: fixed; inset: 0; z-index: 70; pointer-events: none; }
+/* Shades dim the page but NEVER block it. They used to capture clicks, so a
+   stuck or mid-transition guide silently swallowed every click ("buttons take
+   forever"); now the app stays fully usable under the dim while the guide
+   follows along. */
+.wizard-shade {
+  position: absolute;
+  background: rgba(5, 7, 12, 0.74);
+  pointer-events: none;
+}
+.wizard-outline {
+  position: fixed; z-index: 80; pointer-events: none;
+  border: 2px solid var(--violet);
+  border-radius: var(--r-sm);
+  /* One modest ring instead of layered outer glows: large animated blur
+     radii are what dragged on software-rendered VMs. */
+  box-shadow: 0 0 0 5px rgba(139, 92, 246, 0.28);
+}
+.wizard-tip {
+  position: fixed; z-index: 81;
+  max-width: 380px;
+  background: linear-gradient(180deg, #1b2240, var(--card));
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-pop);
+  padding: 1rem 1.15rem;
+}
+/* Narrower windows: shrink the tip so it can still dock beside the centered
+   Settings modal (760px + two margins) instead of forcing a layout shift. */
+@media (max-width: 1620px) { .wizard-tip { max-width: 340px; } }
+@media (max-width: 1480px) { .wizard-tip { max-width: 300px; } }
+@media (max-width: 1350px) { .wizard-tip { max-width: 270px; } }
+.wizard-tip strong { display: block; margin-bottom: 0.4rem; }
+.wizard-tip p { margin: 0 0 0.8rem; color: var(--muted); font-size: 0.9rem; line-height: 1.5; }
+/* When the tip is height-capped (stacked layout on short windows), only the
+   text scrolls: the title and the buttons must stay visible. */
+.wizard-tip { display: flex; flex-direction: column; }
+.wizard-tip p { overflow-y: auto; min-height: 0; }
+.wizard-actions { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex: 0 0 auto; }
+.wizard-nav { display: flex; gap: 0.5rem; flex: 0 0 auto; }
+/* Keep every button on one line in narrow tips: the labels must not wrap
+   ("Skip setup" stacking inside its own button looked broken). */
+.wizard-actions .btn { white-space: nowrap; }
+/* while the wizard points inside Settings, that modal floats above the shade
+   so it stays bright and clickable; outline + tip are higher still. The modal
+   stays exactly where it always is (centered) — no shift on step changes —
+   and the tip is docked beside the modal from its real on-screen rect, or
+   bottom-center when the window is too narrow for two columns. */
+body.wizard-settings #settings-overlay {
+  z-index: 75;
+}
+/* Narrow window: no room beside the modal, so the tip stacks below it.
+   The overlay top-aligns and the modal reserves the strip (max-height is
+   set inline by the wizard) — the tip can never cover the explained card. */
+body.wizard-stack #settings-overlay { align-items: flex-start; }
+body.wizard-stack #settings-overlay .modal-large { max-height: calc(100vh - 200px); }
+.help-type { margin: 0.25rem 0; }
+.help-type code { min-width: 74px; display: inline-block; }
+
+/* staged job controls */
+/* Equal columns: with flex-wrap, a control left alone on the last row
+   stretched over the whole card. */
+.staged-controls { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.8rem; margin: 0.5rem 0; }
+.staged-controls .ctl { min-width: 0; }
+.ctl-hint { font-size: 0.78rem; line-height: 1.3; color: var(--muted); }
+.job-meta { margin-left: auto; }
+.prompt-details { margin: 0.4rem 0; }
+.prompt-details summary { cursor: pointer; color: var(--muted); font-size: 0.85rem; }
+
+.downloads { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
+.saved-path { font-size: 0.85rem; margin: 0.4rem 0 0; color: var(--ok); }
+.job-warning { font-size: 0.85rem; margin: 0.4rem 0 0; color: var(--warn); }
+.saved-path code { background: #0b0e13; border: 1px solid var(--border); padding: 0.15rem 0.4rem; border-radius: 6px; }
+.download {
+  font-size: 0.85rem;
+  color: var(--accent);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 0.35rem 0.7rem;
+  text-decoration: none;
+  display: inline-flex; align-items: center; gap: 0.35rem;
+}
+.download:hover { border-color: var(--accent); }
+
+.error { color: var(--fail); white-space: pre-wrap; font-size: 0.85rem; }
+.empty { text-align: center; padding: 1.5rem; }
+
+/* in-page modal (replaces native dialogs, which leak the origin in app windows) */
+.modal-overlay {
+  position: fixed; inset: 0;
+  /* Above every layer the wizard can put up (shades 70, outline 80, tip 81):
+     a confirm dialog opened mid-walkthrough must never render underneath
+     the coach-mark overlay, dimmed and unclickable. */
+  z-index: 100;
+  /* No backdrop-filter: on VMs with software rendering it stalls compositing
+     and the dialog appears only after a stray repaint (clicks "do nothing"
+     until you click elsewhere). A plain tint is cheap and identical enough. */
+  background: rgba(5, 7, 12, 0.78);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+}
+.modal {
+  background: linear-gradient(180deg, #1a2033, var(--card));
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-pop);
+  max-width: 440px; width: 100%;
+  padding: 1.25rem 1.4rem;
+}
+/* Settings header: title left, "Saved" + close (X) right. Sticky so the X is
+   always reachable while the long form scrolls. */
+.modal-head {
+  position: sticky; top: -1.25rem; z-index: 2;
+  display: flex; align-items: center; gap: 0.6rem;
+  margin: -1.25rem -1.4rem 0.4rem; padding: 0.9rem 1.4rem 0.7rem;
+  background: #1a2033; border-bottom: 1px solid var(--border);
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+}
+.modal-head .modal-title { margin: 0; flex: 1; }
+.settings-saved { display: inline-flex; align-items: center; gap: 0.3rem; color: var(--ok, #6ee7a8); }
+.settings-hint { margin: 0.2rem 0 0.8rem; }
+.modal-title { margin: 0 0 0.8rem; font-size: 1.05rem; display: flex; align-items: center; gap: 0.5rem; }
+.modal-message { margin: 0 0 1.1rem; color: var(--muted); font-size: 0.9rem; white-space: pre-wrap; word-break: break-word; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 0.6rem; align-items: center; }
+.btn-danger-solid { background: linear-gradient(135deg, #ef4444, #b91c1c); box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35); }
+
+@media (max-width: 720px) {
+  .topbar { margin: 0.7rem 0.7rem 0; flex-wrap: wrap; }
+  .content { padding: 0.8rem; }
+  .rail { width: 54px; flex-basis: 54px; }
+  .layout { --rail-w: 54px; padding-right: var(--rail-w); }
+}
+
+/* Settings close (X): floats beside the dialog, in the dimmed area, instead of
+   sitting inside the scrolling panel. The frame is the positioning parent; the
+   scrolling .modal stays a sibling so the button is never clipped or scrolled. */
+.modal-frame { position: relative; width: 100%; max-width: 760px; display: flex; justify-content: center; }
+.modal-frame > .modal { width: 100%; }
+.modal-x {
+  position: absolute; top: 0; left: calc(100% + 14px); z-index: 3;
+  width: 38px; height: 38px; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%; cursor: pointer;
+  color: var(--text); background: rgba(26, 32, 51, 0.92);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+}
+.modal-x:hover { background: #26304a; border-color: var(--accent, #6d8cff); }
+/* Not enough room beside the dialog: tuck the button into its top-right corner. */
+@media (max-width: 880px) {
+  .modal-x { left: auto; right: 8px; top: 8px; }
+  .modal-frame .modal-head { padding-right: 3.4rem; }
+}
+
+/* type-to-search dropdowns (see cbx.js) */
+.cbx { position: relative; display: block; width: 100%; min-width: 0; }
+.cbx-input { width: 100%; padding-right: 2.2rem; text-overflow: ellipsis; }
+.cbx-input::placeholder { color: var(--text); opacity: 0.7; }
+.cbx-caret {
+  position: absolute; right: 0.8rem; top: 50%; width: 12px; height: 12px; margin-top: -6px;
+  background: var(--chevron) no-repeat center / 12px 12px; cursor: pointer;
+}
+.cbx.disabled { opacity: 0.55; }
+/* the real <select> behind a search box: kept for its value and events, takes
+   no room. Padding and border must go too: with border-box sizing the select
+   padding (room for the arrow) kept it 48 px wide, poking out of Settings. */
+.cbx-native {
+  position: absolute; left: 0; top: 0; width: 1px; height: 1px;
+  padding: 0; margin: 0; border: 0; overflow: hidden; clip-path: inset(50%);
+  opacity: 0; pointer-events: none;
+}
+.cbx-list {
+  position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 60;
+  max-height: 280px; overflow-y: auto;
+  background: #161c2c; border: 1px solid var(--border); border-radius: var(--r, 10px);
+  box-shadow: var(--shadow-pop, 0 12px 32px rgba(0, 0, 0, 0.55));
+  padding: 4px;
+}
+.cbx-list[hidden] { display: none; }
+.cbx-option { padding: 0.45rem 0.65rem; border-radius: 7px; cursor: pointer; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cbx-option.active { background: #26304a; }
+.cbx-option.selected { color: var(--accent, #8aa4ff); }
+.cbx-more { padding: 0.4rem 0.65rem; color: var(--muted); font-size: 0.8rem; }
+
+/* whole-job time left, under the progress bar */
+.job-eta { margin: 0.3rem 0 0; font-variant-numeric: tabular-nums; }
+
+/* Light visuals: no shadows, gradients or animation. Chosen automatically on
+   PCs with <= 4 cores (VMs, old laptops), where software rendering of blurred
+   shadows makes every click and scroll lag. */
+html.lite *, html.lite *::before, html.lite *::after {
+  box-shadow: none !important; transition: none !important; text-shadow: none !important;
+  filter: none !important;
+}
+html.lite body { background: var(--bg) !important; }
+html.lite .modal { background: #1a2033 !important; }
+html.lite .progress-fill.indeterminate { animation: none !important; transform: none !important; width: 40% !important; }
+html.lite .icon-btn:hover { transform: none; }
+@media (prefers-reduced-motion: reduce) { .progress-fill.indeterminate { animation: none; } }
+
+.fx-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.fx-row select{max-width:240px}
+
+/* a failed save must be visible, not silent */
+.settings-saved.settings-save-failed { color: var(--fail, #f87171); }
+
+/* While a search dropdown is open its list may hang below the highlighted
+   card; the guide's ring sits above the Settings dialog and was drawn across
+   the list ("the dropdown went through the box highlight"). Hide the ring
+   while the user is picking from a list. */
+body.cbx-open .wizard-outline { visibility: hidden; }

@@ -19,6 +19,10 @@ out/
 .local/
 .pytest_cache/
 .playwright-mcp/
+vm logs/
+tests/artifacts/
+tests/e2e/artifacts/
+/*.png
 
 # Python
 __pycache__/
@@ -35,7 +39,9 @@ venv/
 *.flac
 *.m4a
 # ...except the built-in demo recording that ships with the app
-!meetingnotes/webapp/static/sample.mp3
+!minutenest/webapp/static/sample.mp3
+# ...and the test recordings (tests/fixtures/ATTRIBUTION.md)
+!tests/fixtures/*.mp3
 
 # Env / API keys
 .env

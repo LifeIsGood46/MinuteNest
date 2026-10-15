@@ -1,18 +1,18 @@
-# MeetingNotes
+# MinuteNest
 
-<img src="assets/logo.png" width="120" alt="MeetingNotes logo" />
+<img src="assets/logo.png" width="120" alt="MinuteNest logo" />
 
-MeetingNotes turns meeting recordings into text documents. Drop in a video or
-audio file, and it writes out a transcript, notes, a list of action items, or a
-test plan. Everything runs on your own computer.
+**Every meeting, written down.** Drop in a video or audio file and MinuteNest
+writes out the transcript, and, if you connect an LLM, notes, action items or a
+test plan. Transcription runs on your own computer.
 
 ![queue](screenshots/queue.png)
 
 ## Getting started
 
-1. Download `MeetingNotes-<version>-win64.zip` from Releases and unzip it
+1. Download `MinuteNest-<version>-win64.zip` from Releases and unzip it
    anywhere.
-2. Run `meetingnotes.exe`.
+2. Run `MinuteNest.exe`.
 3. Follow the setup walkthrough: it walks you through picking a model and the
    language of your recordings, adding a recording, and running it. The
    formatted-output (LLM) step is optional and can be skipped.
@@ -41,8 +41,16 @@ needs an internet connection.
 
 The first three stages need nothing but the app. The last stage needs an LLM:
 either a local one (Ollama, LM Studio, any OpenAI-compatible server) or a cloud
-key (Ollama Cloud, OpenRouter, Anthropic, OpenAI). If you only need plain
+key (Ollama Cloud, OpenRouter, Anthropic, OpenAI). OpenRouter's free models
+are often busy; when the one you picked is, another free model writes the
+document and the job says which. If you only need plain
 transcripts, you can skip the LLM entirely.
+
+Two languages are set separately: the **audio language** is the one people
+speak in the recording (Whisper needs it to transcribe), the **document
+language** is the one the LLM writes in. By default the document follows the
+audio; set it to English, for example, to get English notes of a Russian
+meeting. The transcript itself always stays in the language that was spoken.
 
 A run can be stopped from its job card; cancelled jobs stay in the list and
 can be started again.
@@ -50,7 +58,7 @@ can be started again.
 ## Transcript quality
 
 Whisper often mishears technical words. A recording about SCADA tools, for
-example, comes out with "скандала" instead of "SCADA". MeetingNotes fixes this
+example, comes out with "скандала" instead of "SCADA". MinuteNest fixes this
 with a glossary per domain: 14 profiles (software, business, medical, legal,
 finance, education, science, marketing, support, HR, dashboard, SCADA, MES,
 generic); the common ones ship dictionaries in up to 6 languages
@@ -69,24 +77,48 @@ After correction:
 мы используем SCADA для мониторинга
 ```
 
+## Accuracy and speed
+
+Measured with the app's own settings (Whisper large-v3, RTX 5060 Laptop GPU,
+8 GB). WER is the share of words wrong, lower is better; punctuation and case
+are ignored, numbers written as digits instead of words count as errors.
+
+| Recording | WER | Transcription time |
+|-----------|-----|--------------------|
+| Russian, read speech (FLEURS, 30 min) | 3.6% | 2.3 min |
+| Russian, conversational IT podcast (12 min) | 7.0% | 1.2 min |
+| German / Spanish / French, read speech (FLEURS, 10 min each) | 5.5% / 3.1% / 8.4% | under 1 min each |
+| English, read speech (FLEURS, 10 min) | 7.5% | about 0.5 min |
+
+Whisper understands about 100 languages, but quality varies: Ukrainian came out
+at 17% and Armenian at 57% (not usable).
+
 ## Results
 
 Each job writes its files into its own folder under `results/`:
 
-- `<name>.raw.txt`: the transcript as Whisper produced it
 - `<name>.txt`: the transcript after glossary correction
+- `<name>.raw.txt`: the transcript as Whisper produced it — only when the
+  profile's glossary actually changed something (otherwise it is identical to
+  the `.txt` and is not written)
 - `<name>.json`: segments with timestamps (start, end, text)
-- `<name>.<task>.md`: a Markdown document, always written. For `raw` jobs it's
-  a timestamped transcript (`.raw.md`); for formatted output it's the LLM
+- `<name>.<task>.md` and/or `<name>.<task>.txt`: the formatted document.
+  Pick Markdown, plain text or both in Settings or per job. For `raw` jobs it's
+  a timestamped transcript (`<name>.raw.md`; with plain text alone, the `.txt`
+  transcript is the text version); for formatted output it's the LLM
   document (`notes`, `actions`, `testplan`, …).
+
+If the LLM refuses on a very garbled recording, the job fails — but the
+transcript and segments above are written before the LLM stage, so they are
+always in the job's folder.
 
 ## Command line
 
-`meetingnotes-cli.exe` does the same work without a window, for scripts and
+`minutenest-cli.exe` does the same work without a window, for scripts and
 automation:
 
 ```powershell
-meetingnotes-cli run meeting.mp4 --task raw --json
+minutenest-cli run meeting.mp4 --task raw --json
 ```
 
 It supports `--json` output and stable exit codes (0 = success, 1 = usage
@@ -98,13 +130,36 @@ in [AGENTS.md](AGENTS.md).
 ## Requirements
 
 - Windows 10 or 11, 64-bit
-- An NVIDIA GPU is recommended. Without one, transcription still works but
-  runs on the CPU and takes longer per minute of audio.
+- An NVIDIA GPU is recommended. Without one, transcription runs on the CPU and
+  the app starts with the `small` model: on a 16-thread laptop CPU it takes about
+  a sixth of the recording's length (large-v3 on the same CPU: about 80%).
 
 ## Development
 
-Setup and test instructions are in [CONTRIBUTING.md](CONTRIBUTING.md).
+Setup and test instructions are in [CONTRIBUTING.md](CONTRIBUTING.md); the coding
+and quality standards the code is checked against are in [QUALITY.md](QUALITY.md).
+
+## Privacy
+
+Transcription runs on your computer. Your recordings never leave it. MinuteNest has no
+telemetry, no accounts and no update checks. The only network traffic is:
+
+- downloading a Whisper model from Hugging Face when you ask for it, and
+- the text of a transcript, sent to the LLM provider **you** configure
+  (Anthropic, OpenAI, OpenRouter, another OpenAI-compatible service, or Ollama), only
+  when you run a task that uses one. Pick Ollama on your own machine to keep
+  everything local. API keys are stored in plain text in the app's local settings file next to the
+  program (not encrypted) and are never logged.
+
+Recordings of other people can be personal data and may need their consent where you
+live. That responsibility is yours.
 
 ## License
 
-[MIT](LICENSE)
+MinuteNest is free and open source under the [MIT License](LICENSE). It is provided
+"as is", without warranty of any kind.
+
+The Windows release also bundles third-party software (FFmpeg, NVIDIA CUDA runtime
+libraries and Python packages) under their own licences. See
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+

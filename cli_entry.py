@@ -6,7 +6,7 @@ and does not import the web app.
 
 import sys
 
-from meetingnotes.cli import main
+from minutenest.cli import main
 
 if __name__ == "__main__":
     sys.exit(main())

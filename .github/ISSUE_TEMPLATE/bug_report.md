@@ -4,13 +4,13 @@ A clear and concise description of what happened.
 **To reproduce**
 Steps or command:
 ```
-meetingnotes-cli run ...
+minutenest-cli run ...
 ```
 
 **Expected vs actual**
 
 **Environment**
-- meetingnotes version (`--version`):
+- MinuteNest version (`--version`):
 - GPU / device (`cuda` or `cpu`):
 - whisper model size:
 - OS:

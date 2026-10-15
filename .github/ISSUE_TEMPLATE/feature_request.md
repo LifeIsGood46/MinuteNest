@@ -1,5 +1,5 @@
 **Problem / motivation**
-What are you trying to do that meetingnotes doesn't support?
+What are you trying to do that MinuteNest doesn't support?
 
 **Proposed solution**
 How would it work (UI and/or CLI)?
